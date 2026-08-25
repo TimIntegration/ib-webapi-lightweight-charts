@@ -1,9 +1,8 @@
-Description: Examples of using Interactive Brokers Web API. Using FastAPI and Lightweight Charts.
+Description: Examples of using Interactive Brokers Web API. Using FastAPI and Lightweight Charts. Think of this as a continuation of [simpler examples](https://github.com/TimIntegration/ibweb)
 
 Instructions:
 1. Install dependencies
 ```
-
 uv venv
 source .venv/bin/activate
 uv pip install -r requirements.txt
@@ -11,7 +10,7 @@ uv pip install -r requirements.txt
 2. Start the IB Web API gateway and authenticate on localhost:5000
 3. Run the examples
 ```
-uvicorn ex1_generated_data.server:app --reload --port 8000
+uvicorn src.server:app --reload --port 8000
 ```
 
 ## Live stream sequence
