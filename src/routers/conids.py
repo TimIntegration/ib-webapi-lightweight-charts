@@ -24,6 +24,3 @@ async def get_futures_conid(symbol: str = 'ES') -> list[dict]:
             print(f"Error fetching conid for {symbol}: {str(e)}")
 
 
-@router.get('/get-conids')
-async def list_conids_for_symbol(symbol: str = 'ES'):
-    return await get_futures_conid(symbol)

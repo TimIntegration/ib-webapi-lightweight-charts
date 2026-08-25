@@ -6,9 +6,9 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-from .config import IB_GATEWAY_URL, IB_GATEWAY_WS, TARGET_CONID
-from .routers.conids import router as conids_router
 from sse_starlette.sse import EventSourceResponse
+from .config import IB_GATEWAY_URL, IB_GATEWAY_WS, TARGET_CONID
+
 
 
 app = FastAPI()
@@ -27,6 +27,7 @@ app.add_middleware(
 
 router = APIRouter()
 app.include_router(router)
+from .routers.conids import router as conids_router, get_futures_conid
 app.include_router(conids_router)
 from .routers.charts import router as charts_router, stream_from_ibkr
 app.include_router(charts_router)
@@ -57,3 +58,12 @@ async def stream(request: Request):
 
     return EventSourceResponse(event_generator())
 
+
+@router.get('/get-conids')
+async def list_conids_for_symbol(request: Request, symbol: str = 'ES'):
+    conids = await get_futures_conid(symbol)
+    return templates.TemplateResponse(
+        request,
+        "conid-table.html",
+        {"request": request, "symbol": symbol, "conids": conids},
+    )

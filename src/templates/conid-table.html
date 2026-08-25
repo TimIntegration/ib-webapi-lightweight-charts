@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ symbol }}{% endblock %}
+
+{% block content %}
+<section class="info-panel">
+	<div class="title-area">
+		<h1>{{ symbol }}</h1>
+	</div>
+
+	<table>
+		<thead>
+			<tr>
+				<th>Expiration</th>
+				<th>ConID</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for conid in conids %}
+			{% for expiration, value in conid.items() %}
+			<tr>
+				<td>{{ expiration }}</td>
+				<td>{{ value }}</td>
+			</tr>
+			{% endfor %}
+			{% endfor %}
+		</tbody>
+	</table>
+</section>
+
+{% endblock %}
