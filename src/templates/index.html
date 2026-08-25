@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="chart-section">
+    <div id="controls">
+        <div class="control-group">
+            <label for="symbol">Symbol:</label>
+            <input id="symbol" type="text" placeholder="Enter symbol (e.g. ES)" />
+            <button onclick="subscribeSymbol()">Find Contracts IDs</button>
+        </div>
+    </div>
+
+    <div id="chart"></div>
+    <div id="loading" class="loading-indicator">Loading chart data...</div>
+</div>
+
+<div class="controls-bar">
+    <button class="btn" id="refreshBtn" onclick="loadChart()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M2.1 12a10 10 0 0 1 15-8.3L21.5 8M2.5 22v-6h6M21.9 12a10 10 0 0 1-15 8.3L2.5 16" />
+        </svg>
+        Refresh Data
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let chart = null;
+    let candleSeries = null;
+    let eventSource = null;
+
+    function subscribeSymbol() {
+        const symbol = document.getElementById('symbol').value.trim();
+        const query = encodeURIComponent(symbol);
+        window.location.href = `/get-conids?symbol=${query}`;
+    }
+
+    const priceBadge = document.getElementById('priceBadge');
+    const chartOptions = {
+        // width: container.clientWidth,
+        height: 500,
+        layout: {
+            background: { color: '#151924' },
+            textColor: '#848e9c',
+            fontFamily: "'Inter', sans-serif"
+        },
+        grid: {
+            vertLines: { color: '#2a2e3d' },
+            horzLines: { color: '#2a2e3d' }
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal
+        },
+        rightPriceScale: {
+            borderColor: '#2a2e3d'
+        },
+        timeScale: {
+            borderColor: '#2a2e3d',
+            timeVisible: true,
+            secondsVisible: false
+        }
+    };
+
+    const candleOptions = {
+        upColor: '#0ecb81',
+        downColor: '#f6465d',
+        borderUpColor: '#0ecb81',
+        borderDownColor: '#f6465d',
+        wickUpColor: '#0ecb81',
+        wickDownColor: '#f6465d'
+    };
+
+
+    function initChart() {
+        const container = document.getElementById('chart');
+        chart = LightweightCharts.createChart(container, chartOptions);
+
+        // Use the newer addCandlestickSeries method if available, otherwise fallback to addSeries with CandlestickSeries
+        if (typeof chart.addCandlestickSeries === 'function') {
+            candleSeries = chart.addCandlestickSeries(candleOptions);
+        } else if (typeof chart.addSeries === 'function' && LightweightCharts && LightweightCharts.CandlestickSeries) {
+            candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, candleOptions);
+        }
+
+        window.addEventListener('resize', () => {
+            if (chart && container) {
+                chart.applyOptions({ width: container.clientWidth });
+            }
+        });
+    }
+
+    async function loadChart() {
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) {
+            loadingEl.style.opacity = '1';
+            loadingEl.style.pointerEvents = 'all';
+        }
+
+        try {
+            const apiUrl = window.location.origin + "/api/historical";
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const historicalData = await response.json();
+
+            if (!chart) {
+                initChart();
+            }
+
+            if (Array.isArray(historicalData) && historicalData.length > 0) {
+                candleSeries.setData(historicalData);
+                chart.timeScale().fitContent();
+            }
+        } catch (err) {
+            console.error("Error loading chart data:", err);
+        } finally {
+            if (loadingEl) {
+                setTimeout(() => {
+                    loadingEl.style.opacity = '0';
+                    loadingEl.style.pointerEvents = 'none';
+                }, 300);
+            }
+        }
+    }
+
+    function applyStreamCandle(event) {
+        if (!event || !event.data) {
+            return;
+        }
+
+        if (!chart) {
+            initChart();
+        }
+
+        const payload = JSON.parse(event.data);
+        const candle = payload.message || payload;
+
+        if (!candle || candle.time == null || candle.close == null) {
+            return;
+        }
+
+        candleSeries.update(candle);
+
+        const badge = document.getElementById('priceBadge');
+        if (badge) {
+            badge.innerHTML = `<span class="badge-dot"></span> Last: ${Number(candle.close).toFixed(2)}`;
+        }
+    }
+
+    function startStream() {
+        if (eventSource) {
+            eventSource.close();
+        }
+
+        eventSource = new EventSource("/stream");
+        eventSource.addEventListener("message", (event) => {
+            const payload = JSON.parse(event.data);
+            if (payload && payload.type === 'candle') {
+                applyStreamCandle({ data: JSON.stringify(payload) });
+            }
+        });
+
+        eventSource.addEventListener("error", (event) => { console.error('SSE Error:', event); });
+        eventSource.addEventListener("open", () => { console.log('SSE Connection Opened'); });
+    }
+
+    function cleanupConnections() {
+        if (eventSource) {
+            console.log('Closing EventSource connection');
+            eventSource.close();
+            eventSource = null;
+        }
+    }
+
+    window.addEventListener('beforeunload', cleanupConnections);
+    window.addEventListener('pagehide', cleanupConnections);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadChart();
+        startStream();
+    });
+</script>
+{% endblock %}

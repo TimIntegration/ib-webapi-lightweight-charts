@@ -1,0 +1,6 @@
+fastapi
+websockets
+httpx
+uvicorn
+sse-starlette
+jinja2
