@@ -29,3 +29,45 @@
 </section>
 
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const tableBody = document.querySelector('table tbody');
+		const rows = Array.from(tableBody.rows);
+
+		const parseExpiration = (value) => {
+			const match = value.trim().match(/^(\d{4})(\d{2})(\d{2})$/);
+			if (!match) {
+				return null;
+			}
+
+			const [, year, month, day] = match;
+			return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+		};
+
+		rows.sort((firstRow, secondRow) => {
+			const firstDate = parseExpiration(firstRow.cells[0].textContent);
+			const secondDate = parseExpiration(secondRow.cells[0].textContent);
+
+			if (!firstDate) return 1;
+			if (!secondDate) return -1;
+			return firstDate - secondDate;
+		});
+
+		const dateFormatter = new Intl.DateTimeFormat(undefined, {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+
+		rows.forEach((row) => {
+			const expiration = parseExpiration(row.cells[0].textContent);
+			if (expiration) {
+				row.cells[0].textContent = dateFormatter.format(expiration);
+			}
+			tableBody.appendChild(row);
+		});
+	});
+</script>
+{% endblock %}
