@@ -48,7 +48,10 @@ def _parse_tick(tick_data: dict) -> dict:
 
     try:
         time_stamp = int(tick_data.get('_updated', int(time.time())))
-        last_price = float(tick_data["31"])
+        price = tick_data["31"]
+        if isinstance(price, str) and price.startswith("C"):
+            price = price[1:]
+        last_price = float(price)
     except (TypeError, ValueError):
         return None
 
@@ -114,8 +117,11 @@ async def stream_from_ibkr(conid: str = TARGET_CONID, timeout_seconds: int = 15)
                 if isinstance(data, dict) and (data.get("topic") == topic or "31" in data):
                     tick = _parse_tick(data)
                     print(f"[IBKR WS] processed tick: {tick}")
-                    if tick is not None:
-                        yield json.dumps({"type": "tick", "message": tick})
+                    if tick is None:
+                        print("[Warning] Failed to parse market-data tick")
+                        continue
+
+                    yield json.dumps({"type": "tick", "message": tick})
                     candle = _aggregate_ticks_to_bars(tick.get('time'), tick.get('close'))
                     print(f"[IBKR WS] processed candle: {candle}")
                     if candle is not None:
