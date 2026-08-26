@@ -3,7 +3,7 @@
     --bg-secondary: #151924;
     --bg-card: #1e2230;
     --border-color: #2a2e3d;
-    --text-main: #e1e4ea;
+    --text-main: #278588;
     --text-muted: #848e9c;
     --accent-green: #0ecb81;
     --accent-red: #f6465d;
@@ -154,6 +154,11 @@ body {
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+}
+
+div.control-group {
+    border: 1px solid gray;
+    padding-bottom: 12px;
 }
 
 .btn {

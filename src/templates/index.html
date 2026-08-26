@@ -7,10 +7,15 @@
 {% block content %}
 <div class="chart-section">
     <div id="controls">
-        <div class="control-group">
+        <div class="control-group" id="symbol-g">
             <label for="symbol">Symbol:</label>
             <input id="symbol" type="text" placeholder="Enter symbol (e.g. ES)" />
-            <button onclick="subscribeSymbol()">Find Contracts IDs</button>
+            <button onclick="findConID()">Find Contracts IDs</button>
+        </div>
+        <div class="control-group" id="conid-g">
+            <label for="symbol">Conid:</label>
+            <input id="conid" type="text" value="{{ conid }}" placeholder="Current ConID" />
+            <button onclick="loadChart()">Load ConID's Chart</button>
         </div>
     </div>
 
@@ -18,13 +23,35 @@
     <div id="loading" class="loading-indicator">Loading chart data...</div>
 </div>
 
-<div class="controls-bar">
-    <button class="btn" id="refreshBtn" onclick="loadChart()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21.5 2v6h-6M2.1 12a10 10 0 0 1 15-8.3L21.5 8M2.5 22v-6h6M21.9 12a10 10 0 0 1-15 8.3L2.5 16" />
-        </svg>
-        Refresh Data
-    </button>
+<div class="futures-section">
+    <div id="controls">
+        <div class="control-group" id="long-fut">
+            <label for="long-entry">Long Entry:</label>
+            <input id="long-entry" type="text" placeholder="Enter price" />
+            <select name="LE-ordertype" id="LE-ordertype">
+                <option value="LMT">LMT</option>
+                <option value="STP">STP</option>
+            </select>
+            <label for="long-entry-stop">Stop Loss:</label>
+            <input id="long-entry-stop" type="text" placeholder="Enter price" />
+            <label for="long-entry-target">Profit Target:</label>
+            <input id="long-entry-target" type="text" placeholder="Enter price" />
+            <button onclick="longFutures()">Submit LE Bracket Order</button>
+        </div>
+        <div class="control-group" id="short-fut">
+            <label for="short-entry">Short Entry:</label>
+            <input id="short-entry" type="text" placeholder="Enter price" />
+            <select name="LE-ordertype" id="LE-ordertype">
+                <option value="LMT">LMT</option>
+                <option value="STP">STP</option>
+            </select>
+            <label for="short-entry-stop">Stop Loss:</label>
+            <input id="short-entry-stop" type="text" placeholder="Enter price" />
+            <label for="short-entry-target">Profit Target:</label>
+            <input id="short-entry-target" type="text" placeholder="Enter price" />
+            <button onclick="shortFutures()">Submit SE Bracket Order</button>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -34,7 +61,7 @@
     let candleSeries = null;
     let eventSource = null;
 
-    function subscribeSymbol() {
+    function findConID() {
         const symbol = document.getElementById('symbol').value.trim();
         const query = encodeURIComponent(symbol);
         window.location.href = `/get-conids?symbol=${query}`;
@@ -102,7 +129,9 @@
         }
 
         try {
-            const apiUrl = window.location.origin + "/api/historical";
+            const conid = document.getElementById('conid').value.trim();
+            const apiUrl = `${window.location.origin}/api/historical?conid=${encodeURIComponent(conid)}`;
+            startStream(conid);
             const response = await fetch(apiUrl);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -153,12 +182,13 @@
         }
     }
 
-    function startStream() {
+    function startStream(conid) {
         if (eventSource) {
             eventSource.close();
         }
 
-        eventSource = new EventSource("/stream");
+        const streamUrl = `/stream?conid=${encodeURIComponent(conid)}`;
+        eventSource = new EventSource(streamUrl);
         eventSource.addEventListener("message", (event) => {
             const payload = JSON.parse(event.data);
             if (payload && payload.type === 'candle') {
@@ -183,7 +213,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadChart();
-        startStream();
     });
 </script>
 {% endblock %}

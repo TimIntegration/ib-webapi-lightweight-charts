@@ -34,17 +34,21 @@ app.include_router(charts_router)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def get_index(request: Request):
+async def get_index(request: Request, conid: str = TARGET_CONID):
     print("rendering index page")
     """Serves the main charting page."""
-    return templates.TemplateResponse(request, "index.html", {"request": request})
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {"request": request, "conid": conid},
+    )
 
 
 
 @app.get("/stream")
-async def stream(request: Request):
+async def stream(request: Request, conid: str = TARGET_CONID):
     """Server-Sent Events endpoint that forwards live candles from IBKR to the browser."""
-    conid = request.query_params.get("conid", TARGET_CONID)
+    conid = request.query_params.get("conid", conid)
 
     async def event_generator():
         try:
