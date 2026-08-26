@@ -1,0 +1,137 @@
+[
+    {
+        "conid": "11004968",
+        "companyHeader": "E-mini S&P 500 - CME",
+        "companyName": "E-mini S&P 500",
+        "symbol": "ES",
+        "description": "CME",
+        "restricted": "IND",
+        "sections": [
+            {
+                "secType": "IND",
+                "exchange": "CME;"
+            },
+            {
+                "secType": "FUT",
+                "months": "SEP26;DEC26;MAR27;JUN27;SEP27;DEC27;MAR28;JUN28;SEP28;DEC28;MAR29;JUN29;SEP29;DEC29;MAR30;JUN30;SEP30;DEC30;MAR31;JUN31;SEP31",
+                "exchange": "CME",
+                "showPrips": true
+            },
+            {
+                "secType": "FOP",
+                "months": "AUG26;SEP26;OCT26;NOV26;DEC26;JAN27;FEB27;MAR27;APR27;MAY27;JUN27;JUL27;AUG27;SEP27;DEC27;MAR28;JUN28;SEP28;DEC28;DEC29;DEC30",
+                "exchange": "CME",
+                "showPrips": true
+            },
+            {
+                "secType": "BAG",
+                "exchange": "CME",
+                "legSecType": "FUT"
+            },
+            {
+                "secType": "BAG",
+                "exchange": "CME",
+                "legSecType": "FOP"
+            },
+            {
+                "secType": "EC"
+            }
+        ]
+    },
+    {
+        "conid": "182880167",
+        "companyHeader": "EVERSOURCE ENERGY - NYSE",
+        "companyName": "EVERSOURCE ENERGY",
+        "symbol": "ES",
+        "description": "NYSE",
+        "restricted": null,
+        "sections": [
+            {
+                "secType": "STK"
+            },
+            {
+                "secType": "OPT",
+                "months": "SEP26;OCT26;JAN27;APR27",
+                "exchange": "SMART;AMEX;BATS;BOX;CBOE;CBOE2;EDGX;EMERALD;GEMINI;IBUSOPT;ISE;MEMX;MERCURY;MIAX;NASDAQBX;NASDAQOM;PEARL;PHLX;PSE;SAPPHIRE"
+            },
+            {
+                "secType": "IOPT"
+            },
+            {
+                "secType": "CFD",
+                "exchange": "SMART",
+                "conid": "120550804"
+            },
+            {
+                "secType": "BAG"
+            }
+        ]
+    },
+    {
+        "conid": "458401474",
+        "companyHeader": "EVERSOURCE ENERGY - MEXI",
+        "companyName": "EVERSOURCE ENERGY",
+        "symbol": "ES",
+        "description": "MEXI",
+        "restricted": null,
+        "sections": [
+            {
+                "secType": "STK",
+                "exchange": "MEXI;"
+            }
+        ]
+    },
+    {
+        "conid": "1254464",
+        "companyHeader": "NORTH ATLANTIC ENERGIES - SBF",
+        "companyName": "NORTH ATLANTIC ENERGIES",
+        "symbol": "ES",
+        "description": "SBF",
+        "restricted": null,
+        "sections": [
+            {
+                "secType": "STK"
+            },
+            {
+                "secType": "IOPT"
+            },
+            {
+                "secType": "CFD",
+                "exchange": "SMART",
+                "conid": "699182291"
+            }
+        ]
+    },
+    {
+        "issuers": [
+            {
+                "id": "e1416493",
+                "name": "Connecticut Light and Power Co/The"
+            },
+            {
+                "id": "e1409150",
+                "name": "Eversource Energy"
+            },
+            {
+                "id": "e1435904",
+                "name": "NSTAR Electric Co"
+            },
+            {
+                "id": "e1451224",
+                "name": "Public Service Co Of New Hampshire"
+            }
+        ],
+        "bondid": 4,
+        "conid": "2147483647",
+        "companyHeader": "Corporate Fixed Income",
+        "companyName": null,
+        "symbol": null,
+        "description": null,
+        "restricted": null,
+        "sections": [
+            {
+                "secType": "BOND"
+            }
+        ]
+    }
+]

@@ -31,6 +31,8 @@ from .routers.conids import router as conids_router, get_futures_conid
 app.include_router(conids_router)
 from .routers.charts import router as charts_router, stream_from_ibkr
 app.include_router(charts_router)
+from .routers.orders import router as orders_router
+app.include_router(orders_router)
 
 
 @router.get("/", response_class=HTMLResponse)

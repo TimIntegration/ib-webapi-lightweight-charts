@@ -159,6 +159,7 @@ body {
 div.control-group {
     border: 1px solid gray;
     padding-bottom: 12px;
+    padding-top: 12px;
 }
 
 .btn {
