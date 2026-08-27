@@ -21,11 +21,11 @@
             <button onclick="listContractsID()">List Contracts IDs</button>
         </div>
         <div class="control-group" id="conid-g">
-            <label for="baseConid">Base Conid:</label>
-            <input id="baseConid" type="text" value="{{ conid }}" placeholder="Current ConID" />
+            <label for="underlyingConid">underlyingConid:</label>
+            <input id="underlyingConid" type="text" value="{{ conid }}" placeholder="Current ConID" />
             <label for="conid">Conid:</label>
             <input id="conid" type="text" value="{{ conid }}" placeholder="Current ConID" />
-            <button onclick="loadChart()">Load ConID's Chart</button>
+            <button id="btn-conid" onclick="loadChartAndPrices()">Load Chart and Prices</button>
         </div>
     </div>
 </div>
@@ -39,24 +39,80 @@
                 <option value="STP">STP</option>
             </select>
             <label for="long-entry-stop">Stop Loss:</label>
-            <input id="long-entry-stop" type="text" placeholder="Enter price" />
+            <input id="long-entry-stop" type="text" placeholder="Determine Size" />
             <label for="long-entry-target">Profit Target:</label>
-            <input id="long-entry-target" type="text" placeholder="Enter price" />
+            <input id="long-entry-target" type="text" placeholder="Fill by Algo" />
+            <label for="long-entry-size">Quantity:</label>
+            <input id="long-entry-size" type="text" value="1" />
+            <button id="fill-long-entry" onclick="fillLongEntry()">Calculate Entry</button>
             <button onclick="longFutures()">Submit LE Bracket Order</button>
         </div>
         <div class="control-group" id="short-fut">
             <label for="short-entry">Short Entry:</label>
             <input id="short-entry" type="text" placeholder="Enter price" />
-            <select name="LE-ordertype" id="LE-ordertype">
+            <select name="SE-ordertype" id="SE-ordertype">
                 <option value="LMT">LMT</option>
                 <option value="STP">STP</option>
             </select>
             <label for="short-entry-stop">Stop Loss:</label>
-            <input id="short-entry-stop" type="text" placeholder="Enter price" />
+            <input id="short-entry-stop" type="text" placeholder="Determine Size" />
             <label for="short-entry-target">Profit Target:</label>
-            <input id="short-entry-target" type="text" placeholder="Enter price" />
+            <input id="short-entry-target" type="text" placeholder="Fill by Algo" />
+            <label for="short-entry-size">Quantity:</label>
+            <input id="short-entry-size" type="text" placeholder="Enter positive number"/>
+            <button id="fill-short-entry" onclick="fillShortEntry()">Calculate Entry</button>
             <button onclick="shortFutures()">Submit SE Bracket Order</button>
         </div>
+    </div>
+</div>
+
+<div class="options-section">
+    <div id="controls">
+        <h2>Option Spread Builder</h2>
+        <table id="options">
+            <thead>
+                <tr>
+                    <th>Enable</th>
+                    <th>Quantity</th>
+                    <th>Right</th>
+                    <th>Expiration</th>
+                    <th>Strikes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="leg-1">
+                    <td class="Enable">
+                        <input type="checkbox">
+                    </td>
+                    <td class="Quantity">
+                        <input type="text">
+                    </td>
+                    <td class="Right">
+                        <select name="Right">
+                            <option value="C">C</option>
+                            <option value="P">P</option>
+                        </select>
+                    </td>
+                    <td class="Expiration">
+                        <select class="Expiration">
+
+                        </select>
+                    </td>
+                    <td class="Strikes">
+                        <select class="Strikes">
+                        
+                        </select>
+                    </td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+            <select name="LE-ordertype" id="LE-ordertype">
+                <option value="LMT">LMT</option>
+                <option value="STP">STP</option>
+            </select>
+
     </div>
 </div>
 {% endblock %}
@@ -65,7 +121,7 @@
 <script src="{{ url_for('static', path='renderChart.js') }}"></script>
 <script>
     async function fillConIDs() {
-        // update baseConidInput and conidInput by sending symbolInput.value to endpoint '/fillForm'
+        // update underlyingConidInput and conidInput by sending symbolInput.value to endpoint '/fillForm'
         const symbolInput = document.getElementById('symbol');
         if (!symbolInput) return;
         const symbol = symbolInput.value.trim();
@@ -80,10 +136,10 @@
 
             const data = await response.json();
             if (data) {
-                if (data.baseConid !== undefined && data.baseConid !== null) {
-                    const baseConidInput = document.getElementById('baseConid');
-                    if (baseConidInput) {
-                        baseConidInput.value = data.baseConid;
+                if (data.underlyingConid !== undefined && data.underlyingConid !== null) {
+                    const underlyingConidInput = document.getElementById('underlyingConid');
+                    if (underlyingConidInput) {
+                        underlyingConidInput.value = data.underlyingConid;
                     }
                 }
                 if (data.front_month_conid !== undefined && data.front_month_conid !== null) {

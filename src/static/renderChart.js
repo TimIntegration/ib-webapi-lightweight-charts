@@ -78,6 +78,7 @@ async function loadChart() {
         if (Array.isArray(historicalData) && historicalData.length > 0) {
             candleSeries.setData(historicalData);
             chart.timeScale().fitContent();
+            return historicalData[historicalData.length - 1];
         }
     } catch (err) {
         console.error("Error loading chart data:", err);
@@ -88,6 +89,66 @@ async function loadChart() {
                 loadingEl.style.pointerEvents = 'none';
             }, 300);
         }
+    }
+}
+
+async function loadChartAndPrices() {
+    const lastBar = await loadChart();
+    if (lastBar && lastBar.close !== undefined) {
+        const lastPrice = lastBar.close;
+        const longEntry = document.getElementById('long-entry');
+        const shortEntry = document.getElementById('short-entry');
+        if (longEntry) {
+            longEntry.value = lastPrice;
+        }
+        if (shortEntry) {
+            shortEntry.value = lastPrice;
+        }
+    }
+    await getExpirations();
+}
+
+async function getExpirations() {
+    const symbolInput = document.getElementById('symbol');
+    const symbol = symbolInput ? symbolInput.value.trim() : 'ES';
+    if (!symbol) return [];
+
+    try {
+        const response = await fetch(`/get-expiration?symbol=${encodeURIComponent(symbol)}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        let expirations = [];
+
+        if (Array.isArray(data)) {
+            if (data.length === 2 && Array.isArray(data[1])) {
+                expirations = data[1];
+            } else if (data.every(item => typeof item === 'string')) {
+                expirations = data;
+            }
+        } else if (data && Array.isArray(data.months)) {
+            expirations = data.months;
+        } else if (data && Array.isArray(data.expirations)) {
+            expirations = data.expirations;
+        }
+
+        const expirationSelects = document.querySelectorAll('select.Expiration');
+        expirationSelects.forEach(select => {
+            select.innerHTML = '';
+            expirations.forEach(exp => {
+                const option = document.createElement('option');
+                option.value = exp;
+                option.textContent = exp;
+                select.appendChild(option);
+            });
+        });
+
+        return expirations;
+    } catch (err) {
+        console.error("Error getting expirations:", err);
+        return [];
     }
 }
 

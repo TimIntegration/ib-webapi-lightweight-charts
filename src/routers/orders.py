@@ -68,7 +68,7 @@ def _parse_for_expiration(
     return base_conid, [], target_st or 'FOP', None
 
 
-async def get_option_expirations(
+async def _get_option_expirations(
     symbol: str = 'ES',
     sec_type: Optional[str] = None
 ) -> tuple[Optional[str], list[str], str, Optional[str]]:
@@ -103,16 +103,6 @@ async def get_option_expirations(
         except Exception as e:
             print(f"Error fetching expirations for {symbol}: {str(e)}")
             return None, [], 'FOP', None
-
-
-@router.get('/get-expiration')
-async def test_get_option_expirations(
-    symbol: str = 'ES',
-    sec_type: Optional[str] = None
-) -> tuple[Optional[str], list[str]]:
-    """Returns list of FOP/OPT expirations as (conid, months)."""
-    base_conid, months, _, _ = await get_option_expirations(symbol=symbol, sec_type=sec_type)
-    return base_conid, months
 
 
 async def _find_strikes(
@@ -169,7 +159,7 @@ async def show_strikes(
     exchange: Optional[str] = None
 ):
     """Returns option strikes for a given symbol and right ('C', 'P', or 'ALL')."""
-    base_conid, months, derived_sec_type, derived_exchange = await get_option_expirations(
+    base_conid, months, derived_sec_type, derived_exchange = await _get_option_expirations(
         symbol=symbol,
         sec_type=sec_type
     )

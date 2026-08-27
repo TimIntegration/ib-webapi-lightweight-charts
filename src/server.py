@@ -32,7 +32,7 @@ from .routers.conids import router as conids_router, get_futures_conid
 app.include_router(conids_router)
 from .routers.charts import router as charts_router, stream_from_ibkr
 app.include_router(charts_router)
-from .routers.orders import router as orders_router
+from .routers.orders import router as orders_router, _get_option_expirations
 app.include_router(orders_router)
 
 
@@ -94,6 +94,18 @@ async def get_baseconid_and_front_month_conid(request: Request = None, symbol: O
         "baseConid": str(underlying_conid) if underlying_conid is not None else "",
         "front_month_conid": str(front_month_conid) if front_month_conid is not None else ""
     }
+
+
+@router.get('/get-expiration')
+async def get_option_expirations(
+    symbol: str = 'ES',
+    sec_type: Optional[str] = None
+) -> tuple[Optional[str], list[str]]:
+    """Returns list of FOP/OPT expirations as (conid, months)."""
+    base_conid, months, _, _ = await _get_option_expirations(symbol=symbol, sec_type=sec_type)
+    print(f"{months}")
+    return base_conid, months
+
 
 
 
