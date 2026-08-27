@@ -81,49 +81,18 @@ async def list_conids_for_symbol(request: Request, symbol: str = 'ES'):
     )
 
 
-@router.post('/fillForm')
-async def fill_form(request: Request = None, symbol: Optional[str] = None):
+@router.get('/fillConIDsInputs')
+async def get_baseconid_and_front_month_conid(request: Request = None, symbol: Optional[str] = 'ES'):
     """Fetches baseConid and conid for the requested symbol using get_futures_conid."""
-    target_symbol = symbol
-    if not target_symbol and request is not None:
-        target_symbol = request.query_params.get('symbol')
-        if not target_symbol:
-            try:
-                body = await request.json()
-                if isinstance(body, dict):
-                    target_symbol = body.get('symbol')
-            except Exception:
-                pass
-        if not target_symbol:
-            try:
-                form = await request.form()
-                target_symbol = form.get('symbol')
-            except Exception:
-                pass
+    underlying_conid, conids = await get_futures_conid(symbol)
 
-    if not target_symbol:
-        target_symbol = 'ES'
-
-    target_symbol = target_symbol.strip()
-    result = await get_futures_conid(symbol=target_symbol)
-
-    underlying_conid = None
-    front_month_conid = ""
-    conids = []
-
-    if result:
-        underlying_conid, conids = result
-        if conids and len(conids) > 0 and isinstance(conids[0], dict):
-            front_month_conid = str(next(iter(conids[0].values()), ""))
-
-    if not front_month_conid and target_symbol.upper() in futures_base_conid:
-        front_month_conid = futures_base_conid.get(target_symbol.upper(), "")
+    front_month_conid = None
+    if conids and len(conids) > 0 and isinstance(conids[0], dict):
+        front_month_conid = next(iter(conids[0].values()), None)
 
     return {
         "baseConid": str(underlying_conid) if underlying_conid is not None else "",
-        "front_month_conid": str(front_month_conid) if front_month_conid else "",
-        "conid": str(front_month_conid) if front_month_conid else "",
-        "conids": conids or []
+        "front_month_conid": str(front_month_conid) if front_month_conid is not None else ""
     }
 
 

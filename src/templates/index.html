@@ -65,19 +65,14 @@
 <script src="{{ url_for('static', path='renderChart.js') }}"></script>
 <script>
     async function fillConIDs() {
+        // update baseConidInput and conidInput by sending symbolInput.value to endpoint '/fillForm'
         const symbolInput = document.getElementById('symbol');
         if (!symbolInput) return;
         const symbol = symbolInput.value.trim();
         if (!symbol) return;
 
         try {
-            const response = await fetch(`/fillForm?symbol=${encodeURIComponent(symbol)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ symbol: symbol })
-            });
+            const response = await fetch(`/fillConIDsInputs?symbol=${encodeURIComponent(symbol)}`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -91,11 +86,10 @@
                         baseConidInput.value = data.baseConid;
                     }
                 }
-                const conidInput = document.getElementById('conid');
-                if (conidInput && conidInput.value.trim() === '') {
-                    const frontMonthConid = data.front_month_conid || data.conid;
-                    if (frontMonthConid !== undefined && frontMonthConid !== null) {
-                        conidInput.value = frontMonthConid;
+                if (data.front_month_conid !== undefined && data.front_month_conid !== null) {
+                    const conidInput = document.getElementById('conid');
+                    if (conidInput) {
+                        conidInput.value = data.front_month_conid;
                     }
                 }
             }
