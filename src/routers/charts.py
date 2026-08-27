@@ -2,13 +2,13 @@ import httpx
 import json, time, asyncio, websockets, ssl
 from fastapi import APIRouter
 from .. import utils
-from ..config import TARGET_CONID, IB_GATEWAY_URL, IB_GATEWAY_WS
+from ..config import TEST_CONID, IB_GATEWAY_URL, IB_GATEWAY_WS
 
 router = APIRouter()
 
 
 @router.get("/api/historical")
-async def get_historical_bars(conid: str = TARGET_CONID, period: str = "1w", bar_size: str = "5min"):
+async def get_historical_bars(conid: str = TEST_CONID, period: str = "1w", bar_size: str = "5min"):
     """Queries IBKR Gateway for historical data and reformats for TradingView."""
     params = {
         "conid": conid,
@@ -90,7 +90,7 @@ def _aggregate_ticks_to_bars(timestamp, last_price):
 
 
 
-async def stream_from_ibkr(conid: str = TARGET_CONID, timeout_seconds: int = 15):
+async def stream_from_ibkr(conid: str = TEST_CONID, timeout_seconds: int = 15):
     """Streams live IBKR data and yields candles, or a heartbeat/status update if only heartbeats arrive."""
     topic = f"smd+{conid}"
     ssl_context = ssl.create_default_context()

@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Optional
 from fastapi import FastAPI
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
@@ -7,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
-from .config import IB_GATEWAY_URL, IB_GATEWAY_WS, TARGET_CONID
+from .config import IB_GATEWAY_URL, IB_GATEWAY_WS, TEST_CONID, futures_base_conid
 
 
 
@@ -36,7 +37,7 @@ app.include_router(orders_router)
 
 
 @router.get("/", response_class=HTMLResponse)
-async def get_index(request: Request, conid: str = TARGET_CONID):
+async def get_index(request: Request, conid: str = TEST_CONID):
     print("rendering index page")
     """Serves the main charting page."""
     return templates.TemplateResponse(
@@ -48,7 +49,7 @@ async def get_index(request: Request, conid: str = TARGET_CONID):
 
 
 @app.get("/stream")
-async def stream(request: Request, conid: str = TARGET_CONID):
+async def stream(request: Request, conid: str = TEST_CONID):
     """Server-Sent Events endpoint that forwards live candles from IBKR to the browser."""
     conid = request.query_params.get("conid", conid)
 
@@ -78,3 +79,52 @@ async def list_conids_for_symbol(request: Request, symbol: str = 'ES'):
             "conids": conids,
         },
     )
+
+
+@router.post('/fillForm')
+async def fill_form(request: Request = None, symbol: Optional[str] = None):
+    """Fetches baseConid and conid for the requested symbol using get_futures_conid."""
+    target_symbol = symbol
+    if not target_symbol and request is not None:
+        target_symbol = request.query_params.get('symbol')
+        if not target_symbol:
+            try:
+                body = await request.json()
+                if isinstance(body, dict):
+                    target_symbol = body.get('symbol')
+            except Exception:
+                pass
+        if not target_symbol:
+            try:
+                form = await request.form()
+                target_symbol = form.get('symbol')
+            except Exception:
+                pass
+
+    if not target_symbol:
+        target_symbol = 'ES'
+
+    target_symbol = target_symbol.strip()
+    result = await get_futures_conid(symbol=target_symbol)
+
+    underlying_conid = None
+    front_month_conid = ""
+    conids = []
+
+    if result:
+        underlying_conid, conids = result
+        if conids and len(conids) > 0 and isinstance(conids[0], dict):
+            front_month_conid = str(next(iter(conids[0].values()), ""))
+
+    if not front_month_conid and target_symbol.upper() in futures_base_conid:
+        front_month_conid = futures_base_conid.get(target_symbol.upper(), "")
+
+    return {
+        "baseConid": str(underlying_conid) if underlying_conid is not None else "",
+        "front_month_conid": str(front_month_conid) if front_month_conid else "",
+        "conid": str(front_month_conid) if front_month_conid else "",
+        "conids": conids or []
+    }
+
+
+

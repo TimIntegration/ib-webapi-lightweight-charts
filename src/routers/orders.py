@@ -5,7 +5,7 @@ from typing import Any, Optional
 import httpx
 from fastapi import APIRouter
 from .. import utils
-from ..config import IB_GATEWAY_URL, futures_FUT_conid
+from ..config import IB_GATEWAY_URL, futures_base_conid
 
 router = APIRouter()
 
@@ -74,7 +74,7 @@ async def get_option_expirations(
 ) -> tuple[Optional[str], list[str], str, Optional[str]]:
     """Helper to retrieve underlying conid, expirations, secType, and exchange from IBKR."""
     # Resolve symbol if a known futures conid was provided
-    conid_to_symbol = {v: k for k, v in futures_FUT_conid.items()}
+    conid_to_symbol = {v: k for k, v in futures_base_conid.items()}
     resolved_symbol = conid_to_symbol.get(symbol, symbol)
 
     async with httpx.AsyncClient(verify=False) as client:
@@ -105,8 +105,8 @@ async def get_option_expirations(
             return None, [], 'FOP', None
 
 
-@router.get('/get-expirations')
-async def find_option_expiration(
+@router.get('/get-expiration')
+async def test_get_option_expirations(
     symbol: str = 'ES',
     sec_type: Optional[str] = None
 ) -> tuple[Optional[str], list[str]]:
@@ -191,9 +191,9 @@ async def show_strikes(
         exchange=target_exchange,
         right=right
     )
-    if len(strikes) > number_of_strikes:
-        start_index = (len(strikes) - number_of_strikes) // 2
-        end_index = start_index + number_of_strikes
-        strikes = strikes[start_index:end_index]
+    # if len(strikes) > number_of_strikes:
+    #     start_index = (len(strikes) - number_of_strikes) // 2
+    #     end_index = start_index + number_of_strikes
+    #     strikes = strikes[start_index:end_index]
     print(f"{strikes=}")
     return strikes
