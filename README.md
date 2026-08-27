@@ -1,4 +1,4 @@
-Description: Examples of using Interactive Brokers Web API. Using FastAPI and Lightweight Charts. Think of this as a continuation of [simpler examples](https://github.com/TimIntegration/ibweb)
+Description: Examples of using Interactive Brokers Web API. Using FastAPI and Lightweight Charts. Think of this as a continuation of [simpler examples](https://github.com/TimIntegration/ibweb), refer to that README.md for instruction on how to run the IB Web API Gateway defined in the Dockerfile.
 
 Instructions:
 1. Install dependencies
@@ -12,6 +12,9 @@ uv pip install -r requirements.txt
 ```
 uvicorn src.server:app --reload --port 8000
 ```
+
+Open the dashboard at `http://localhost:8000/`. The FastAPI server uses plain HTTP;
+using `https://localhost:8000/` causes Uvicorn to report `Invalid HTTP request received`.
 
 ## Live stream sequence
 

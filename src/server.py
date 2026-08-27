@@ -67,9 +67,14 @@ async def stream(request: Request, conid: str = TARGET_CONID):
 
 @router.get('/get-conids')
 async def list_conids_for_symbol(request: Request, symbol: str = 'ES'):
-    conids = await get_futures_conid(symbol)
+    underlyingConid, conids = await get_futures_conid(symbol)
     return templates.TemplateResponse(
         request,
         "conid-table.html",
-        {"request": request, "symbol": symbol, "conids": conids},
+        {
+            "request": request,
+            "symbol": symbol,
+            "underlyingConid": underlyingConid,
+            "conids": conids,
+        },
     )

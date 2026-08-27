@@ -6,23 +6,29 @@
 
 {% block content %}
 <div class="chart-section">
-    <div id="controls">
-        <div class="control-group" id="symbol-g">
-            <label for="symbol">Symbol:</label>
-            <input id="symbol" type="text" placeholder="Enter symbol (e.g. ES)" />
-            <button onclick="findConID()">Find Contracts IDs</button>
-        </div>
-        <div class="control-group" id="conid-g">
-            <label for="symbol">Conid:</label>
-            <input id="conid" type="text" value="{{ conid }}" placeholder="Current ConID" />
-            <button onclick="loadChart()">Load ConID's Chart</button>
-        </div>
-    </div>
+    
 
     <div id="chart"></div>
     <div id="loading" class="loading-indicator">Loading chart data...</div>
 </div>
 
+<div class="search-section">
+    <div id="controls">
+        <div class="control-group" id="symbol-g">
+            <label for="symbol">Symbol:</label>
+            <input id="symbol" type="text" value="ES" />
+            <button onclick="prefillForm()">Fill Form</button>
+            <button onclick="listContractsID()">List Contracts IDs</button>
+        </div>
+        <div class="control-group" id="conid-g">
+            <label for="baseConid">Base Conid:</label>
+            <input id="baseConid" type="text" value="{{ conid }}" placeholder="Current ConID" />
+            <label for="conid">Conid:</label>
+            <input id="conid" type="text" value="{{ conid }}" placeholder="Current ConID" />
+            <button onclick="loadChart()">Load ConID's Chart</button>
+        </div>
+    </div>
+</div>
 <div class="futures-section">
     <div id="controls">
         <div class="control-group" id="long-fut">
@@ -61,10 +67,10 @@
     let candleSeries = null;
     let eventSource = null;
 
-    function findConID() {
+    function listContractsID() {
         const symbol = document.getElementById('symbol').value.trim();
         const query = encodeURIComponent(symbol);
-        window.location.href = `/get-conids?symbol=${query}`;
+        window.open(`/get-conids?symbol=${query}`, '_blank', 'noopener,noreferrer');
     }
 
     const priceBadge = document.getElementById('priceBadge');
