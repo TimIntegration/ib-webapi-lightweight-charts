@@ -5,7 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}IBKR Trading Dashboard{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}?v=3">
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -13,18 +16,21 @@
 <body>
     <nav>
         <div class="nav-container">
-            <a href="/" class="nav-brand">IBKR Trading Dashboard</a>
+            <a href="/" class="nav-brand">
+                <span class="brand-dot"></span>
+                IBKR Trading Dashboard
+            </a>
             <ul class="nav-links">
-                <li><a href="/" class="active">Real-Time Chart</a></li>
-                <li><a href="/get-conids">Find ConIDs</a></li>
+                <li><a href="/" class="active">Order Form</a></li>
+                <li><a href="/get-conids">Positions</a></li>
                 <li><a href="/tradelog">Trade Log</a></li>
             </ul>
         </div>
     </nav>
 
-    <div class="container">
+    <main class="container">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
     {% block extra_scripts %}{% endblock %}
 </body>

@@ -6,8 +6,6 @@
 
 {% block content %}
 <div class="chart-section">
-    
-
     <div id="chart"></div>
     <div id="loading" class="loading-indicator">Loading chart data...</div>
 </div>
@@ -33,33 +31,33 @@
     <div id="controls">
         <div class="control-group" id="long-fut">
             <label for="long-entry">Long Entry:</label>
-            <input id="long-entry" type="text" placeholder="Enter price" />
+            <input type="text"  class="Price" id="long-entry" placeholder="Enter price" />
             <select name="LE-ordertype" id="LE-ordertype">
                 <option value="LMT">LMT</option>
                 <option value="STP">STP</option>
             </select>
             <label for="long-entry-stop">Stop Loss:</label>
-            <input id="long-entry-stop" type="text" placeholder="Determine Size" />
+            <input type="text" class="Price" id="long-entry-stop" placeholder="Determine Size" />
             <label for="long-entry-target">Profit Target:</label>
-            <input id="long-entry-target" type="text" placeholder="Fill by Algo" />
+            <input id="long-entry-target" type="text"  class="Price" placeholder="Fill by Algo" />
             <label for="long-entry-size">Quantity:</label>
-            <input id="long-entry-size" type="text" value="1" />
+            <input id="long-entry-size" type="text"  class="Quantity" value="1" />
             <button id="fill-long-entry" onclick="fillLongEntry()">Calculate Entry</button>
             <button onclick="longFutures()">Submit LE Bracket Order</button>
         </div>
         <div class="control-group" id="short-fut">
             <label for="short-entry">Short Entry:</label>
-            <input id="short-entry" type="text" placeholder="Enter price" />
+            <input id="short-entry" type="text"  class="Price" placeholder="Enter price" />
             <select name="SE-ordertype" id="SE-ordertype">
                 <option value="LMT">LMT</option>
                 <option value="STP">STP</option>
             </select>
             <label for="short-entry-stop">Stop Loss:</label>
-            <input id="short-entry-stop" type="text" placeholder="Determine Size" />
+            <input id="short-entry-stop" type="text" class="Price" placeholder="Determine Size" />
             <label for="short-entry-target">Profit Target:</label>
-            <input id="short-entry-target" type="text" placeholder="Fill by Algo" />
+            <input id="short-entry-target" type="text"  class="Price" placeholder="Fill by Algo" />
             <label for="short-entry-size">Quantity:</label>
-            <input id="short-entry-size" type="text" placeholder="Enter positive number"/>
+            <input id="short-entry-size" type="text" class="Quantity" value="1" />
             <button id="fill-short-entry" onclick="fillShortEntry()">Calculate Entry</button>
             <button onclick="shortFutures()">Submit SE Bracket Order</button>
         </div>
@@ -68,157 +66,160 @@
 
 <div class="options-section">
     <div id="controls">
-        <h2>Option Spread Builder</h2>
-        <table id="options">
-            <thead>
-                <tr>
-                    <th>Enable</th>
-                    <th>Quantity</th>
-                    <th>Right</th>
-                    <th>Expiration</th>
-                    <th>Strikes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr id="leg-1">
-                    <td class="Enable">
-                        <input type="checkbox">
-                    </td>
-                    <td class="Quantity">
-                        <input type="text" size="4" maxlength="5">
-                    </td>
-                    <td class="Right">
-                        <select class="Right">
-                            <option value="C">C</option>
-                            <option value="P">P</option>
-                        </select>
-                    </td>
-                    <td class="Expiration">
-                        <select class="Expiration">
-                        </select>
-                    </td>
-                    <td class="Strikes">
-                        <select class="Strikes">
-                        </select>
-                    </td>
-                </tr>
-                <tr id="leg-2">
-                    <td class="Enable">
-                        <input type="checkbox">
-                    </td>
-                    <td class="Quantity">
-                        <input type="text" size="4" maxlength="5">
-                    </td>
-                    <td class="Right">
-                        <select class="Right">
-                            <option value="C">C</option>
-                            <option value="P">P</option>
-                        </select>
-                    </td>
-                    <td class="Expiration">
-                        <select class="Expiration">
-                        </select>
-                    </td>
-                    <td class="Strikes">
-                        <select class="Strikes">
-                        </select>
-                    </td>
-                </tr>
-                <tr id="leg-3">
-                    <td class="Enable">
-                        <input type="checkbox">
-                    </td>
-                    <td class="Quantity">
-                        <input type="text" size="4" maxlength="5">
-                    </td>
-                    <td class="Right">
-                        <select class="Right">
-                            <option value="C">C</option>
-                            <option value="P">P</option>
-                        </select>
-                    </td>
-                    <td class="Expiration">
-                        <select class="Expiration">
-                        </select>
-                    </td>
-                    <td class="Strikes">
-                        <select class="Strikes">
-                        </select>
-                    </td>
-                </tr>
-                <tr id="leg-4">
-                    <td class="Enable">
-                        <input type="checkbox">
-                    </td>
-                    <td class="Quantity">
-                        <input type="text" size="4" maxlength="5">
-                    </td>
-                    <td class="Right">
-                        <select class="Right">
-                            <option value="C">C</option>
-                            <option value="P">P</option>
-                        </select>
-                    </td>
-                    <td class="Expiration">
-                        <select class="Expiration">
-                        </select>
-                    </td>
-                    <td class="Strikes">
-                        <select class="Strikes">
-                        </select>
-                    </td>
-                </tr>
-                <tr id="leg-5">
-                    <td class="Enable">
-                        <input type="checkbox">
-                    </td>
-                    <td class="Quantity">
-                        <input type="text" size="4" maxlength="5">
-                    </td>
-                    <td class="Right">
-                        <select class="Right">
-                            <option value="C">C</option>
-                            <option value="P">P</option>
-                        </select>
-                    </td>
-                    <td class="Expiration">
-                        <select class="Expiration">
-                        </select>
-                    </td>
-                    <td class="Strikes">
-                        <select class="Strikes">
-                        </select>
-                    </td>
-                </tr>
-                <tr id="leg-6">
-                    <td class="Enable">
-                        <input type="checkbox">
-                    </td>
-                    <td class="Quantity">
-                        <input type="text" size="4" maxlength="5">
-                    </td>
-                    <td class="Right">
-                        <select class="Right">
-                            <option value="C">C</option>
-                            <option value="P">P</option>
-                        </select>
-                    </td>
-                    <td class="Expiration">
-                        <select class="Expiration">
-                        </select>
-                    </td>
-                    <td class="Strikes">
-                        <select class="Strikes">
-                        </select>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="control-group" id="option-spread">
-            <label for="LEStopAndTarget">Close option spread when underlying hit Stop or Target</label>
-            <input id="LEStopAndTarget" type="checkbox">
-            <button>Calculate Quantity</button>
-            <button>Submit Spread/Combo Order</button>
+        <form>
+            <h2>Option Spread Builder</h2>
+            <table id="options">
+                <thead>
+                    <tr>
+                        <th>Enable</th>
+                        <th>Quantity</th>
+                        <th>Right</th>
+                        <th>Expiration</th>
+                        <th>Strikes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="leg-1">
+                        <td class="Enable">
+                            <input type="checkbox">
+                        </td>
+                        <td class="Quantity">
+                            <input type="text" class="Quantity" size="4" maxlength="5">
+                        </td>
+                        <td class="Right">
+                            <select class="Right">
+                                <option value="C">C</option>
+                                <option value="P">P</option>
+                            </select>
+                        </td>
+                        <td class="Expiration">
+                            <select class="Expiration">
+                            </select>
+                        </td>
+                        <td class="Strikes">
+                            <select class="Strikes">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="leg-2">
+                        <td class="Enable">
+                            <input type="checkbox">
+                        </td>
+                        <td class="Quantity">
+                            <input type="text" class="Quantity" size="4" maxlength="5">
+                        </td>
+                        <td class="Right">
+                            <select class="Right">
+                                <option value="C">C</option>
+                                <option value="P">P</option>
+                            </select>
+                        </td>
+                        <td class="Expiration">
+                            <select class="Expiration">
+                            </select>
+                        </td>
+                        <td class="Strikes">
+                            <select class="Strikes">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="leg-3">
+                        <td class="Enable">
+                            <input type="checkbox">
+                        </td>
+                        <td class="Quantity">
+                            <input type="text" class="Quantity" size="4" maxlength="5">
+                        </td>
+                        <td class="Right">
+                            <select class="Right">
+                                <option value="C">C</option>
+                                <option value="P">P</option>
+                            </select>
+                        </td>
+                        <td class="Expiration">
+                            <select class="Expiration">
+                            </select>
+                        </td>
+                        <td class="Strikes">
+                            <select class="Strikes">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="leg-4">
+                        <td class="Enable">
+                            <input type="checkbox">
+                        </td>
+                        <td class="Quantity">
+                            <input type="text" class="Quantity" size="4" maxlength="5">
+                        </td>
+                        <td class="Right">
+                            <select class="Right">
+                                <option value="C">C</option>
+                                <option value="P">P</option>
+                            </select>
+                        </td>
+                        <td class="Expiration">
+                            <select class="Expiration">
+                            </select>
+                        </td>
+                        <td class="Strikes">
+                            <select class="Strikes">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="leg-5">
+                        <td class="Enable">
+                            <input type="checkbox">
+                        </td>
+                        <td class="Quantity">
+                            <input type="text" class="Quantity" size="4" maxlength="5">
+                        </td>
+                        <td class="Right">
+                            <select class="Right">
+                                <option value="C">C</option>
+                                <option value="P">P</option>
+                            </select>
+                        </td>
+                        <td class="Expiration">
+                            <select class="Expiration">
+                            </select>
+                        </td>
+                        <td class="Strikes">
+                            <select class="Strikes">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="leg-6">
+                        <td class="Enable">
+                            <input type="checkbox">
+                        </td>
+                        <td class="Quantity">
+                            <input type="text" class="Quantity" size="4" maxlength="5">
+                        </td>
+                        <td class="Right">
+                            <select class="Right">
+                                <option value="C">C</option>
+                                <option value="P">P</option>
+                            </select>
+                        </td>
+                        <td class="Expiration">
+                            <select class="Expiration">
+                            </select>
+                        </td>
+                        <td class="Strikes">
+                            <select class="Strikes">
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="control-group" id="option-spread">
+                <label for="LEStopAndTarget">Close option spread when underlying hit Stop or Target</label>
+                <input id="LEStopAndTarget" type="checkbox">
+                <button>Calculate Quantity</button>
+                <button type="submit">Submit Spread/Combo Order</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
