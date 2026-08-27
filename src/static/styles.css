@@ -228,3 +228,10 @@ div.control-group {
 #conids td {
     padding: 8px 12px;
 }
+
+td.Quantity input {
+    width: 5ch;
+    max-width: 5ch;
+    text-align: center;
+    padding: 2px 4px;
+}

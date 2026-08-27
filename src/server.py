@@ -91,6 +91,7 @@ async def get_baseconid_and_front_month_conid(request: Request = None, symbol: O
         front_month_conid = next(iter(conids[0].values()), None)
 
     return {
+        "underlyingConid": str(underlying_conid) if underlying_conid is not None else "",
         "baseConid": str(underlying_conid) if underlying_conid is not None else "",
         "front_month_conid": str(front_month_conid) if front_month_conid is not None else ""
     }
@@ -105,7 +106,3 @@ async def get_option_expirations(
     base_conid, months, _, _ = await _get_option_expirations(symbol=symbol, sec_type=sec_type)
     print(f"{months}")
     return base_conid, months
-
-
-
-

@@ -106,6 +106,7 @@ async function loadChartAndPrices() {
         }
     }
     await getExpirations();
+    await getStrikes();
 }
 
 async function getExpirations() {
@@ -134,7 +135,7 @@ async function getExpirations() {
             expirations = data.expirations;
         }
 
-        const expirationSelects = document.querySelectorAll('select.Expiration');
+        const expirationSelects = document.querySelectorAll('select.Expiration, select[name="Expiration"], .Expiration select');
         expirationSelects.forEach(select => {
             select.innerHTML = '';
             expirations.forEach(exp => {
@@ -143,11 +144,91 @@ async function getExpirations() {
                 option.textContent = exp;
                 select.appendChild(option);
             });
+            select.onchange = () => getStrikes();
+        });
+
+        const rightSelects = document.querySelectorAll('select[class="Right"], select[name="Right"], .Right select');
+        rightSelects.forEach(select => {
+            select.onchange = () => getStrikes();
         });
 
         return expirations;
     } catch (err) {
         console.error("Error getting expirations:", err);
+        return [];
+    }
+}
+
+async function getStrikes(symbol, month, right) {
+    const symbolInput = document.getElementById('symbol');
+    const currentSymbol = symbol || (symbolInput ? symbolInput.value.trim() : 'ES') || 'ES';
+    if (!currentSymbol) return [];
+
+    const monthSelect = document.querySelector('select.Expiration, select[name="Expiration"], .Expiration select');
+    const currentMonth = month || (monthSelect ? monthSelect.value : '');
+
+    const rightSelect = document.querySelector('select[class="Right"], select[name="Right"], .Right select');
+    const currentRight = right || (rightSelect ? rightSelect.value : 'C');
+
+    const params = new URLSearchParams();
+    params.append('symbol', currentSymbol);
+    if (currentMonth) {
+        params.append('month', currentMonth);
+    }
+    if (currentRight) {
+        params.append('right', currentRight);
+    }
+
+    try {
+        const response = await fetch(`/get-strikes?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        let strikes = [];
+
+        if (Array.isArray(data)) {
+            strikes = data;
+        } else if (data && Array.isArray(data.call)) {
+            strikes = data.call;
+        } else if (data && Array.isArray(data.put)) {
+            strikes = data.put;
+        } else if (data && Array.isArray(data.strikes)) {
+            strikes = data.strikes;
+        }
+
+        // Find the strike closest to input#long-entry value
+        const longEntryEl = document.getElementById('long-entry');
+        const targetPrice = longEntryEl && longEntryEl.value ? parseFloat(longEntryEl.value) : null;
+        let closestStrike = null;
+
+        if (targetPrice !== null && !isNaN(targetPrice) && strikes.length > 0) {
+            closestStrike = strikes.reduce((prev, curr) => {
+                return Math.abs(Number(curr) - targetPrice) < Math.abs(Number(prev) - targetPrice) ? curr : prev;
+            }, strikes[0]);
+        }
+
+        const strikeSelects = document.querySelectorAll('select.Strikes, select[name="Strikes"], .Strikes select');
+        strikeSelects.forEach(select => {
+            select.innerHTML = '';
+            strikes.forEach(strike => {
+                const option = document.createElement('option');
+                option.value = strike;
+                option.textContent = strike;
+                if (closestStrike !== null && String(strike) === String(closestStrike)) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+            if (closestStrike !== null) {
+                select.value = closestStrike;
+            }
+        });
+
+        return strikes;
+    } catch (err) {
+        console.error("Error getting strikes:", err);
         return [];
     }
 }
@@ -208,4 +289,3 @@ window.addEventListener('pagehide', cleanupConnections);
 document.addEventListener('DOMContentLoaded', () => {
     loadChart();
 });
-
