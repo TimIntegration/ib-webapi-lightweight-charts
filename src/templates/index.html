@@ -16,7 +16,7 @@
             <label for="symbol">Symbol:</label>
             <input id="symbol" type="text" value="ES" />
             <button onclick="fillConIDs()">Get ConIDs</button>
-            <button onclick="listContractsID()">List Contracts IDs</button>
+            <button onclick="listContractsID()">List Contracts IDs...</button>
         </div>
         <div class="control-group" id="conid-g">
             <label for="underlyingConid">underlyingConid:</label>
@@ -29,38 +29,40 @@
 </div>
 <div class="futures-section">
     <div id="controls">
-        <div class="control-group" id="long-fut">
-            <label for="long-entry">Long Entry:</label>
-            <input type="text"  class="Price" id="long-entry" placeholder="Enter price" />
+        <div class="control-group" id="futures-entry">
+            <label for="fut-entry">Futures Entry:</label>
+            <select name="fut-order-direction" id="fut-order-direction">
+                <option value="long">Long</option>
+                <option value="short">Short</option>
+            </select>
+            <input type="text"  class="Price" id="fut-entry" placeholder="Enter price" />
             <select name="LE-ordertype" id="LE-ordertype">
                 <option value="LMT">LMT</option>
                 <option value="STP">STP</option>
             </select>
-            <label for="long-entry-stop">Stop Loss:</label>
-            <input type="text" class="Price" id="long-entry-stop" placeholder="Determine Size" />
-            <label for="long-entry-target">Profit Target:</label>
-            <input id="long-entry-target" type="text"  class="Price" placeholder="Fill by Algo" />
-            <label for="long-entry-size">Quantity:</label>
-            <input id="long-entry-size" type="text"  class="Quantity" value="1" />
-            <button id="fill-long-entry" onclick="fillLongEntry()">Calculate Entry</button>
-            <button onclick="longFutures()">Submit LE Bracket Order</button>
+            <label for="fut-entry-stop">Stop Loss:</label>
+            <input type="text" class="Price" id="fut-entry-stop" placeholder="Determine Size" />
+            <label for="fut-entry-target">Profit Target:</label>
+            <input id="fut-entry-target" type="text"  class="Price" placeholder="Fill by Algo" />
+            <label for="fut-entry-size">Quantity:</label>
+            <input id="fut-entry-size" type="text"  class="Quantity" value="1" />
+            <button id="fill-fut-entry" onclick="fillFuturesEntry()">Calculate Entry</button>
+            <label for="fut-tp-entry-plus-stop">Take profit on half at entry + stop</label>
+            <input type="checkbox" id="fut-tp-entry-plus-stop">
+            <label for="fut-tp-half-then-trail">Take profit on half at target then trailing stop on the rest</label>
+            <input type="checkbox" id="fut-tp-half-then-trail" checked>
+            <label for="fut-time-stop-profit">Time stop at profit (minutes):</label>
+            <input type="text" class="Price" id="fut-time-stop-profit" value="0"/>
+            <label for="fut-time-stop-loss">Time stop at loss (minutes):</label>
+            <input type="text" class="Price" id="fut-time-stop-loss" value="0"/>
+            <button onclick="enterFutures()" class="fut-bracket" id="fut-bracket-btn">Submit Futures Bracket Order</button>
         </div>
-        <div class="control-group" id="short-fut">
-            <label for="short-entry">Short Entry:</label>
-            <input id="short-entry" type="text"  class="Price" placeholder="Enter price" />
-            <select name="SE-ordertype" id="SE-ordertype">
-                <option value="LMT">LMT</option>
-                <option value="STP">STP</option>
-            </select>
-            <label for="short-entry-stop">Stop Loss:</label>
-            <input id="short-entry-stop" type="text" class="Price" placeholder="Determine Size" />
-            <label for="short-entry-target">Profit Target:</label>
-            <input id="short-entry-target" type="text"  class="Price" placeholder="Fill by Algo" />
-            <label for="short-entry-size">Quantity:</label>
-            <input id="short-entry-size" type="text" class="Quantity" value="1" />
-            <button id="fill-short-entry" onclick="fillShortEntry()">Calculate Entry</button>
-            <button onclick="shortFutures()">Submit SE Bracket Order</button>
-        </div>
+        <dl>
+            <dt>Capital at Risk:</dt>
+            <dd id="capital-at-risk"></dd>
+            <dt>Return / Risk:</dt>
+            <dd id="return-on-risk"></dd>
+        </dl>
     </div>
 </div>
 
@@ -261,6 +263,101 @@
             console.error("Error prefilling form:", err);
         }
     }
+
+    async function fillFuturesEntry() {
+        const entryInput = document.getElementById('fut-entry');
+        const stopInput = document.getElementById('fut-entry-stop');
+        const targetInput = document.getElementById('fut-entry-target');
+        const directionSelect = document.getElementById('fut-order-direction');
+        const bracketButton = document.getElementById('fut-bracket-btn');
+
+        if (!entryInput || !stopInput || !targetInput) {
+            return;
+        }
+
+        if (!entryInput.value || entryInput.value.trim() === '') {
+            let defaultPrice = '7730.00';
+            try {
+                const storedPrice = localStorage.getItem('fut-entry-default');
+                if (storedPrice !== null && storedPrice !== '') {
+                    defaultPrice = storedPrice;
+                }
+            } catch (err) {
+                console.warn('Unable to load default futures entry price from localStorage:', err);
+            }
+            entryInput.value = defaultPrice;
+        }
+
+        const entryPrice = Number(entryInput.value);
+        if (Number.isNaN(entryPrice)) {
+            return;
+        }
+
+        const model = await window.getModel ? window.getModel() : {};
+        const direction = directionSelect ? directionSelect.value : 'long';
+        const longStopFactor = Number(model?.longStopFactor ?? 0.004);
+        const shortStopFactor = Number(model?.shortStopFactor ?? 0.004);
+        const longTargetFactor = Number(model?.longTargetFactor ?? 0.008);
+        const shortTargetFactor = Number(model?.shortTargetFactor ?? 0.008);
+
+        if (direction === 'short') {
+            stopInput.value = (entryPrice * (1 + shortStopFactor)).toFixed(2);
+            targetInput.value = (entryPrice * (1 - shortTargetFactor)).toFixed(2);
+        } else {
+            stopInput.value = (entryPrice * (1 - longStopFactor)).toFixed(2);
+            targetInput.value = (entryPrice * (1 + longTargetFactor)).toFixed(2);
+        }
+        // Calculate and display
+        const multiplier = Number(model?.contractSize ?? 50);
+        changeCapitalAtRisk(multiplier);
+    }
+
+    function changeCapitalAtRisk(multiplier_per_point = 50) {
+        let quantity = parseFloat(document.getElementById('fut-entry-size').value) * multiplier_per_point;
+        const entryPrice = parseFloat(document.getElementById('fut-entry').value);
+        const stopPrice = parseFloat(document.getElementById('fut-entry-stop').value);
+        const targetPrice = parseFloat(document.getElementById('fut-entry-target').value);
+
+        if (isNaN(entryPrice) || isNaN(stopPrice) || isNaN(targetPrice)) {
+            document.getElementById('capital-at-risk').textContent = 'Invalid input';
+            document.getElementById('return-on-risk').textContent = 'Invalid input';
+            return;
+        }
+
+        const capitalAtRisk = Math.abs(entryPrice - stopPrice) * quantity;
+        let returnOnRisk = 0;
+        if (capitalAtRisk !== 0) {
+            returnOnRisk = Math.abs(targetPrice - entryPrice) * quantity / capitalAtRisk;
+        }
+        const takeProfitOnHalfAtEntryPlusStop = document.getElementById('fut-tp-entry-plus-stop').checked;
+        if (takeProfitOnHalfAtEntryPlusStop) {
+            const returnAtTP1 = Math.abs(entryPrice - stopPrice) * quantity / 2;
+            const returnAtTP2 = Math.abs(targetPrice - entryPrice) * quantity / 2;
+            const averageReturn = returnAtTP1 + returnAtTP2;
+            returnOnRisk = capitalAtRisk === 0 ? 0 : averageReturn / capitalAtRisk;
+        }
+
+        document.getElementById('capital-at-risk').textContent = `$${capitalAtRisk.toFixed(2)}`;
+        document.getElementById('return-on-risk').textContent = Number.isFinite(returnOnRisk) ? returnOnRisk.toFixed(2) : '0.00';
+    }
+
+    const futEntryInput = document.getElementById('fut-entry');
+    const futStopInput = document.getElementById('fut-entry-stop');
+    const futTargetInput = document.getElementById('fut-entry-target');
+    const futEntrySizeInput = document.getElementById('fut-entry-size');
+    [futEntryInput, futStopInput, futTargetInput, futEntrySizeInput].forEach((input) => {
+        if (!input) return;
+        input.addEventListener('input', changeCapitalAtRisk);
+        input.addEventListener('change', changeCapitalAtRisk);
+    });
+    const futTakeProfitFlags = document.querySelectorAll('#fut-tp-entry-plus-stop, #fut-tp-half-then-trail');
+    futTakeProfitFlags.forEach((checkbox) => {
+        checkbox.addEventListener('change', changeCapitalAtRisk);
+    });
+
+
+
+
 
     function listContractsID() {
         const symbol = document.getElementById('symbol').value.trim();

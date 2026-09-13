@@ -18,6 +18,24 @@
             }
         },
         {
+            "label": "uv: fastapi dev file",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "fastapi",
+                "dev",
+                "server.py" // uv run fastapi dev ${fileBasename}
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "uvicorn: run server",
             "type": "shell",
             "command": "uv",
@@ -36,6 +54,5 @@
                 "$python"
             ]
         },
-        
     ]
 }

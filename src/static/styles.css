@@ -370,6 +370,55 @@ button[onclick="shortFutures()"]:hover {
     color: #ffffff;
 }
 
+button.fut-bracket {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34d399;
+    font-weight: 600;
+}
+
+button.fut-bracket:hover {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: #ffffff;
+}
+
+button.fut-bracket[data-direction="long"],
+button.fut-bracket.is-long {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34d399;
+}
+
+button.fut-bracket[data-direction="long"]:hover,
+button.fut-bracket.is-long:hover {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
+    color: #ffffff;
+}
+
+button.fut-bracket[data-direction="short"],
+button.fut-bracket.is-short {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #f87171;
+}
+
+button.fut-bracket[data-direction="short"]:hover,
+button.fut-bracket.is-short:hover {
+    background: var(--accent-red);
+    border-color: var(--accent-red);
+    color: #ffffff;
+}
+
+.futures-bracket-box {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 6px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
 /* ==========================================================================
    Options Spread Table
    ========================================================================== */

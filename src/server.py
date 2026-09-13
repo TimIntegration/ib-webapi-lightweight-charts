@@ -1,7 +1,8 @@
+import asyncio
 import json
 from pathlib import Path
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, params
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -106,3 +107,14 @@ async def get_option_expirations(
     base_conid, months, _, _ = await _get_option_expirations(symbol=symbol, sec_type=sec_type)
     print(f"{months}")
     return base_conid, months
+
+
+@app.get('/api/params')
+async def get_params(symbol: str = 'ES'):
+    """Returns a JSON object with calculated parameters."""
+    # Read dict from file params.json
+    params_file_path: Path = BASE_DIR / 'params.json'
+    if not params_file_path.exists():
+        return {"error": "params.json file not found."}
+    file_content = json.loads(await asyncio.to_thread(params_file_path.read_text))
+    return file_content.get(symbol, {"error": f"No parameters found for symbol {symbol}."})

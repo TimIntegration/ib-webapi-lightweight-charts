@@ -1,0 +1,16 @@
+{
+    "ES": {
+        "name": "ES",
+        "type": "futures",
+        "exchange": "CME",
+        "currency": "USD",
+        "tickSize": 0.25,
+        "tickValue": 12.5,
+        "contractSize": 50,
+        "margin": 5000,
+        "longStopFactor": 0.004,
+        "longTargetFactor": 0.008,
+        "shortStopFactor": 0.004,
+        "shortTargetFactor": 0.05
+    }
+}

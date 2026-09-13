@@ -23,7 +23,8 @@ const chartOptions = {
     timeScale: {
         borderColor: '#2a2e3d',
         timeVisible: true,
-        secondsVisible: false
+        secondsVisible: false,
+        rightOffset: 20 * chart.timeScale().getbarSpacing() // 20 bars * spacing
     }
 };
 
@@ -43,8 +44,8 @@ function initChart() {
     // Use the newer addCandlestickSeries method if available, otherwise fallback to addSeries with CandlestickSeries
     if (typeof chart.addCandlestickSeries === 'function') {
         candleSeries = chart.addCandlestickSeries(candleOptions);
-    } else if (typeof chart.addSeries === 'function' && LightweightCharts && LightweightCharts.CandlestickSeries) {
-        candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, candleOptions);
+    // } else if (typeof chart.addSeries === 'function' && LightweightCharts && LightweightCharts.CandlestickSeries) {
+    //     candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, candleOptions);
     }
 
     window.addEventListener('resize', () => {
@@ -80,6 +81,11 @@ async function loadChart() {
             chart.timeScale().fitContent();
             return historicalData[historicalData.length - 1];
         }
+        const stopInput = document.getElementById('fut-entry-stop');
+        const targetInput = document.getElementById('fut-entry-target');
+        if (stopInput.value && targetInput.value) {
+            drawBracket(candleSeries, stopInput.value, targetInput.value);
+        }
     } catch (err) {
         console.error("Error loading chart data:", err);
     } finally {
@@ -95,7 +101,13 @@ async function loadChart() {
 async function loadChartAndPrices() {
     const lastBar = await loadChart();
     if (lastBar && lastBar.close !== undefined) {
-        const lastPrice = lastBar.close;
+        const lastPrice = Number(lastBar.close);
+        try {
+            localStorage.setItem('fut-entry-default', String(lastPrice));
+        } catch (err) {
+            console.warn('Unable to save last price to localStorage:', err);
+        }
+
         const longEntry = document.getElementById('long-entry');
         const shortEntry = document.getElementById('short-entry');
         if (longEntry) {
@@ -283,9 +295,128 @@ function cleanupConnections() {
     }
 }
 
+async function getModel() {
+    const symbol = document.getElementById('symbol').value.trim();
+    try {
+        const response = await fetch('/api/params?symbol=' + encodeURIComponent(symbol));
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const modelData = await response.json();
+        return modelData;
+    } catch (error) {
+        console.error("Error fetching model data:", error);
+        return {};
+    }
+}
+
+function updateFuturesBracketButton() {
+    const directionSelect = document.getElementById('fut-order-direction');
+    const bracketButton = document.querySelector('button.fut-bracket');
+    if (!directionSelect || !bracketButton) {
+        return;
+    }
+
+    const isShort = directionSelect.value === 'short';
+    bracketButton.dataset.direction = isShort ? 'short' : 'long';
+    bracketButton.classList.toggle('is-short', isShort);
+    bracketButton.classList.toggle('is-long', !isShort);
+}
+
+function drawBracket(series, stopPrice, targetPrice) {
+    if (!series || typeof series.createPriceLine !== 'function') {
+        return;
+    }
+
+    const lineWidth = 2;
+    const stopPriceLine = {
+        price: Number(stopPrice),
+        color: '#ef5350',
+        lineWidth: lineWidth,
+        lineStyle: 2, // LineStyle.Dashed
+        axisLabelVisible: true,
+        title: 'stop',
+    };
+    const targetPriceLine = {
+        price: Number(targetPrice),
+        color: '#26a69a',
+        lineWidth: lineWidth,
+        lineStyle: 2, // LineStyle.Dashed
+        axisLabelVisible: true,
+        title: 'target',
+    };
+
+    series.createPriceLine(stopPriceLine);
+    series.createPriceLine(targetPriceLine);
+}
+
+
+
+async function fillFuturesEntry() {
+    const entryInput = document.getElementById('fut-entry');
+    const stopInput = document.getElementById('fut-entry-stop');
+    const targetInput = document.getElementById('fut-entry-target');
+    const directionSelect = document.getElementById('fut-order-direction');
+
+    if (!entryInput || !stopInput || !targetInput) {
+        return;
+    }
+
+    if (!entryInput.value || entryInput.value.trim() === '') {
+        const lastPrice = document.getElementById('priceBadge');
+        if (lastPrice && lastPrice.textContent) {
+            const match = lastPrice.textContent.match(/Last:\s*([0-9.]+)/);
+            if (match) {
+                entryInput.value = match[1];
+            }
+        }
+    }
+
+    const entryPrice = Number(entryInput.value);
+    if (Number.isNaN(entryPrice)) {
+        return;
+    }
+
+    const model = await getModel();
+    const direction = directionSelect ? directionSelect.value : 'long';
+    const longStopFactor = Number(model?.longStopFactor ?? 0.004);
+    const shortStopFactor = Number(model?.shortStopFactor ?? 0.004);
+    const longTargetFactor = Number(model?.longTargetFactor ?? 0.008);
+    const shortTargetFactor = Number(model?.shortTargetFactor ?? 0.008);
+
+    if (direction === 'short') {
+        stopInput.value = (entryPrice * (1 + shortStopFactor)).toFixed(2);
+        targetInput.value = (entryPrice * (1 - shortTargetFactor)).toFixed(2);
+    } else {
+        stopInput.value = (entryPrice * (1 - longStopFactor)).toFixed(2);
+        targetInput.value = (entryPrice * (1 + longTargetFactor)).toFixed(2);
+    }
+
+    if (!chart) {
+        initChart();
+    }
+    drawBracket(candleSeries, stopInput.value, targetInput.value);
+}
+
 window.addEventListener('beforeunload', cleanupConnections);
 window.addEventListener('pagehide', cleanupConnections);
 
 document.addEventListener('DOMContentLoaded', () => {
+    const directionSelect = document.getElementById('fut-order-direction');
+    const bracketButton = document.querySelector('button.fut-bracket');
+    if (directionSelect) {
+        directionSelect.addEventListener('change', updateFuturesBracketButton);
+        directionSelect.value = 'long';
+    }
+    if (bracketButton) {
+        bracketButton.dataset.direction = 'long';
+        bracketButton.classList.remove('is-short');
+        bracketButton.classList.add('is-long');
+    } else {
+        bracketButton.dataset.direction = 'short';
+        bracketButton.classList.remove('is-long');
+        bracketButton.classList.add('is-short');
+    }
+    updateFuturesBracketButton();
     loadChart();
 });
