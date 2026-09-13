@@ -40,28 +40,27 @@
                 <option value="LMT">LMT</option>
                 <option value="STP">STP</option>
             </select>
-            <label for="fut-entry-stop">Stop Loss:</label>
-            <input type="text" class="Price" id="fut-entry-stop" placeholder="Determine Size" />
-            <label for="fut-entry-target">Profit Target:</label>
-            <input id="fut-entry-target" type="text"  class="Price" placeholder="Fill by Algo" />
-            <label for="fut-entry-size">Quantity:</label>
-            <input id="fut-entry-size" type="text"  class="Quantity" value="1" />
+        </div>
+        <div class="control-group" id="futures-stop">
+            <label for="fut-entry-stop">Stop Loss:</label><input type="text" class="Price" id="fut-entry-stop"
+                placeholder="Determine Size" />
+            <label for="fut-entry-target">Profit Target:</label><input id="fut-entry-target" type="text" class="Price"
+                placeholder="Fill by Algo" />
+            <label for="fut-entry-size">Quantity:</label><input id="fut-entry-size" type="text" class="Quantity" value="1" />
+        </div>
+        <div class="control-group" id="futures-submit">
+            <label for="fut-tp-entry-plus-stop">Take profit on half at entry + stop</label><input type="checkbox" id="fut-tp-entry-plus-stop">
+            <label for="fut-tp-half-then-trail">Take profit on half at target then trailing stop on the rest</label><input type="checkbox" id="fut-tp-half-then-trail" checked>
+            <label for="fut-time-stop-profit">Time stop at profit (minutes):</label><input type="text" class="Price" id="fut-time-stop-profit" value="0"/>
+            <label for="fut-time-stop-loss">Time stop at loss (minutes):</label><input type="text" class="Price" id="fut-time-stop-loss" value="0"/>
+        </div>
+        <div class="control-group" id="futures-calculate">
             <button id="fill-fut-entry" onclick="fillFuturesEntry()">Calculate Entry</button>
-            <label for="fut-tp-entry-plus-stop">Take profit on half at entry + stop</label>
-            <input type="checkbox" id="fut-tp-entry-plus-stop">
-            <label for="fut-tp-half-then-trail">Take profit on half at target then trailing stop on the rest</label>
-            <input type="checkbox" id="fut-tp-half-then-trail" checked>
-            <label for="fut-time-stop-profit">Time stop at profit (minutes):</label>
-            <input type="text" class="Price" id="fut-time-stop-profit" value="0"/>
-            <label for="fut-time-stop-loss">Time stop at loss (minutes):</label>
-            <input type="text" class="Price" id="fut-time-stop-loss" value="0"/>
-            <button onclick="enterFutures()" class="fut-bracket" id="fut-bracket-btn">Submit Futures Bracket Order</button>
+            <button onclick="enterFutures()" class="fut-bracket is-long" data-direction="long" id="fut-bracket-btn">Submit Futures Bracket Order</button>
         </div>
         <dl>
-            <dt>Capital at Risk:</dt>
-            <dd id="capital-at-risk"></dd>
-            <dt>Return / Risk:</dt>
-            <dd id="return-on-risk"></dd>
+            <dt>Capital at Risk:</dt><dd id="capital-at-risk"></dd>
+            <dt>Return / Risk:</dt><dd id="return-on-risk"></dd>
         </dl>
     </div>
 </div>
@@ -78,6 +77,8 @@
                         <th>Right</th>
                         <th>Expiration</th>
                         <th>Strikes</th>
+                        <th>Bid/Sell</th>
+                        <th>Ask/Buy</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,6 +103,12 @@
                             <select class="Strikes">
                             </select>
                         </td>
+                        <td class="bid">
+                            <label class="bid-label"></label>
+                        </td>
+                        <td class="ask">
+                            <label class="ask-label"></label>
+                        </td>
                     </tr>
                     <tr id="leg-2">
                         <td class="Enable">
@@ -123,6 +130,12 @@
                         <td class="Strikes">
                             <select class="Strikes">
                             </select>
+                        </td>
+                        <td class="bid">
+                            <label class="bid-label"></label>
+                        </td>
+                        <td class="ask">
+                            <label class="ask-label"></label>
                         </td>
                     </tr>
                     <tr id="leg-3">
@@ -146,6 +159,12 @@
                             <select class="Strikes">
                             </select>
                         </td>
+                        <td class="bid">
+                            <label class="bid-label"></label>
+                        </td>
+                        <td class="ask">
+                            <label class="ask-label"></label>
+                        </td>
                     </tr>
                     <tr id="leg-4">
                         <td class="Enable">
@@ -167,6 +186,12 @@
                         <td class="Strikes">
                             <select class="Strikes">
                             </select>
+                        </td>
+                        <td class="bid">
+                            <label class="bid-label"></label>
+                        </td>
+                        <td class="ask">
+                            <label class="ask-label"></label>
                         </td>
                     </tr>
                     <tr id="leg-5">
@@ -190,6 +215,12 @@
                             <select class="Strikes">
                             </select>
                         </td>
+                        <td class="bid">
+                            <label class="bid-label"></label>
+                        </td>
+                        <td class="ask">
+                            <label class="ask-label"></label>
+                        </td>
                     </tr>
                     <tr id="leg-6">
                         <td class="Enable">
@@ -211,6 +242,12 @@
                         <td class="Strikes">
                             <select class="Strikes">
                             </select>
+                        </td>
+                        <td class="bid">
+                            <label class="bid-label"></label>
+                        </td>
+                        <td class="ask">
+                            <label class="ask-label"></label>
                         </td>
                     </tr>
                 </tbody>
@@ -354,9 +391,6 @@
     futTakeProfitFlags.forEach((checkbox) => {
         checkbox.addEventListener('change', changeCapitalAtRisk);
     });
-
-
-
 
 
     function listContractsID() {

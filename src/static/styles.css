@@ -370,18 +370,6 @@ button[onclick="shortFutures()"]:hover {
     color: #ffffff;
 }
 
-button.fut-bracket {
-    background: rgba(16, 185, 129, 0.14);
-    border-color: rgba(16, 185, 129, 0.35);
-    color: #34d399;
-    font-weight: 600;
-}
-
-button.fut-bracket:hover {
-    background: var(--accent-green);
-    border-color: var(--accent-green);
-    color: #ffffff;
-}
 
 button.fut-bracket[data-direction="long"],
 button.fut-bracket.is-long {
